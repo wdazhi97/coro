@@ -89,6 +89,7 @@ public:
                 return awaitable_.try_await(awaitingCoro);
             }
 
+            //返回右值引用有问题
             return_type await_resume() noexcept
             {
                 return std::move(awaitable_.get_result(std::make_integer_sequence<std::size_t, sizeof...(Tasks)>{}));
