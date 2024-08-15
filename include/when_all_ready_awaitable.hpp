@@ -26,6 +26,8 @@ template<typename ... Tasks>
 class when_all_ready_awaitble<std::tuple<Tasks ...>>
 {
 public:
+
+    using return_type = std::tuple<typename Tasks::return_type...>;
     explicit when_all_ready_awaitble(Tasks&& ...tasks)
         noexcept(std::conjunction_v<std::is_nothrow_move_constructible<Tasks>...>)
         :counter_(sizeof...(Tasks))
@@ -59,9 +61,9 @@ public:
                 return awaitable_.try_await(awaitingCoro);
             }
 
-            std::tuple<Tasks ...> &await_resume() noexcept
+            return_type await_resume() noexcept
             {
-                return awaitable_.tasks_;
+                return awaitable_.get_result(std::make_integer_sequence<std::size_t, sizeof...(Tasks)>{});
             }
         private:
             when_all_ready_awaitble &awaitable_;
@@ -87,9 +89,9 @@ public:
                 return awaitable_.try_await(awaitingCoro);
             }
 
-            std::tuple<Tasks ...> &&await_resume() noexcept
+            return_type await_resume() noexcept
             {
-                return std::move(awaitable_.tasks_);
+                return std::move(awaitable_.get_result(std::make_integer_sequence<std::size_t, sizeof...(Tasks)>{}));
             }
         private:
             when_all_ready_awaitble &awaitable_;
@@ -116,6 +118,13 @@ private:
     {
         ((std::get<INDEX>(tasks_).start(counter_)), ...);
     }
+
+    template<std::size_t ...INDEX>
+    return_type get_result(std::integer_sequence<std::size_t, INDEX...>) noexcept
+    {
+        return std::make_tuple(std::get<INDEX>(tasks_).result()...);
+    }
+
 public:
     when_all_counter counter_;
     std::tuple<Tasks ...> tasks_;

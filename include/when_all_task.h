@@ -155,6 +155,7 @@ class when_all_task
 public:
     using promise_type = when_all_task_promise<Result>;
     using coroutine_handle_t = typename promise_type::corotinue_handle_t;
+    using return_type = Result;
 
     when_all_task(coroutine_handle_t coro) noexcept
         :coroutine_(coro) {};

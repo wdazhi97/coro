@@ -53,7 +53,7 @@ public:
             }
             void await_suspend(std::coroutine_handle<> coroutine_handle) {
                 srand(static_cast<unsigned int>(time(nullptr)));
-                sleepTime = rand() % 10 + 1;
+                sleepTime = rand() % 2 + 1;
                 std::async([=]() {
                     std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
                     coroutine_handle.resume();
@@ -76,9 +76,11 @@ wait_time_task wait_time_task_func()
 outer_task outer_tasks()
 {
     std::cout << "outer coro begin ...." << std::endl;
+    //auto task = when_all_ready(wait_time_task_func(), wait_time_task_func());
     auto [task1, task2] = co_await when_all_ready(wait_time_task_func(), wait_time_task_func());
-    std::cout << "task1 sleep time " << task1.result() << "s" << std::endl;
-    std::cout << "task2 sleep time " << task2.result() << "s" << std::endl;
+
+    std::cout << "task1 sleep time " << task1 << "s" << std::endl;
+    std::cout << "task2 sleep time " << task2 << "s" << std::endl;
     std::cout << "outer coro end ...." << std::endl;
     co_return;
 }
