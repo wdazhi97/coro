@@ -52,12 +52,12 @@ public:
                 return false;
             }
             void await_suspend(std::coroutine_handle<> coroutine_handle) {
-                srand(static_cast<unsigned int>(time(nullptr)));
-                sleepTime = rand() % 2 + 1;
-                std::async([=]() {
-                    std::this_thread::sleep_for(std::chrono::seconds(sleepTime));
-                    coroutine_handle.resume();
-                    });
+                sleepTime = rand() % 5 + 5;
+                std::thread([this, coroutine_handle]() {
+                   std::this_thread::sleep_for(std::chrono::seconds(this->sleepTime));
+                   coroutine_handle.resume();
+                }).detach();
+                std::cout << "task resume after " << std::endl;
             }
             int await_resume() {
                 std::cout << "task resume after " << sleepTime  << "s" << std::endl;
@@ -68,16 +68,11 @@ public:
     }
 };
 
-wait_time_task wait_time_task_func()
-{
-    co_return;
-}
-
 outer_task outer_tasks()
 {
     std::cout << "outer coro begin ...." << std::endl;
     //auto task = when_all_ready(wait_time_task_func(), wait_time_task_func());
-    auto [task1, task2] = co_await when_all_ready(wait_time_task_func(), wait_time_task_func());
+    auto [task1, task2] = co_await when_all_ready(wait_time_task(), wait_time_task());
 
     std::cout << "task1 sleep time " << task1 << "s" << std::endl;
     std::cout << "task2 sleep time " << task2 << "s" << std::endl;
@@ -85,12 +80,13 @@ outer_task outer_tasks()
     co_return;
 }
 
-
-
 int main()
 {
     std::cout << "main begin ...." << std::endl;
     auto outer_task_test = outer_tasks();
+    while(true) {
+        // do something
+    }
     std::cout << "main end ...." << std::endl;
     system("pause");
 }
