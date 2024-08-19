@@ -77,6 +77,11 @@ public:
         return cancel_token(m_state);
     }
 
+    cancel_request()
+    {
+        m_state = std::make_shared<cancel_state>();
+    }
+
     void request_cancel()
     {
         if(m_state)
