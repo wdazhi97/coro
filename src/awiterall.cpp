@@ -88,6 +88,6 @@ int main()
         // do something
     }
     std::cout << "main end ...." << std::endl;
-    system("pause");
+    //system("pause");
 }
 
