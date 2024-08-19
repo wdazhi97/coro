@@ -10,10 +10,17 @@
 #include <vector>
 #include <functional>
 #include <memory>
+#include <ranges>
 
 enum class cancel_state_type : uint8_t {
     NONE,
     CANCELED,
+};
+
+class call_back_state{
+public:
+    std::function<void()> call_back;
+    bool is_valid;
 };
 
 class cancel_state {
@@ -21,7 +28,12 @@ public:
 
     void cancel(){
         m_state = static_cast<std::uint32_t> (cancel_state_type::CANCELED);
-        call_backs.back()();
+        for(auto call : std::views::reverse(call_backs)) {
+            if(call.is_valid)
+            {
+                call.call_back();
+            }
+        }
     };
 
     [[nodiscard]] bool is_cancelled() const
@@ -29,14 +41,23 @@ public:
         return m_state == static_cast<std::uint32_t> (cancel_state_type::CANCELED);
     }
 
-    void register_token(const std::function<void()>& function)
+    int register_token(const std::function<void()>& function)
     {
-        call_backs.push_back(function);
+        call_backs.push_back({function,true});
+        return call_backs.size() - 1;
+    }
+
+    void set_call_invalid(int index)
+    {
+        if(index > 0 && index < call_backs.size())
+        {
+            call_backs[index].is_valid = false;
+        }
     }
 
 private:
     std::uint32_t m_state;
-    std::vector<std::function<void()>> call_backs;
+    std::vector<call_back_state> call_backs;
 };
 
 class cancel_token{
@@ -48,9 +69,14 @@ public:
         return m_state && m_state->is_cancelled();
     }
 
-    void register_callback(const std::function<void()>& function)
+    int register_callback(const std::function<void()>& function)
     {
-        m_state->register_token(function);
+        return m_state->register_token(function);
+    }
+
+    void set_call_invalid(int index)
+    {
+        m_state->set_call_invalid(index);
     }
 
 private:

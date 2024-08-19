@@ -22,9 +22,11 @@ public:
             }
             void await_suspend(std::coroutine_handle<> coroutine_handle) {
                 sleepTime = rand() % 5 + 5;
+
+                {std::cout << "await suspend" << this << std::endl;}
                 std::thread([this, coroutine_handle]() {
                     std::this_thread::sleep_for(std::chrono::seconds(this->sleepTime));
-                    std::cout << "reach the time" << std::endl;
+                    std::cout << "reach the time " << this->sleepTime << std::endl;
                     if(!coroutine_handle.done()) {
                         coroutine_handle.resume();
                     }
@@ -34,6 +36,11 @@ public:
                 std::cout << "task resume after " << sleepTime  << "s" << std::endl;
                 return sleepTime;
             }
+
+            awaiter()  {std::cout << "wait time task construct" << std::endl;}
+            ~awaiter()  {
+                sleepTime++;
+                std::cout << "wait time task disconstruct" << std::endl;}
         };
         return awaiter{};
     }
