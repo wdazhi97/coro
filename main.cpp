@@ -13,12 +13,14 @@ cppcoro::sync_task<int> test() {
     cancel_request req;
     auto token = req.token();
     co_await cancel(token);
+    req.request_cancel();
     co_return 1;
 }
 
 
 
 int main() {
-    test();
+    auto result = test();
+    std::cout << result.result() << std::endl;
     while(1){};
 }

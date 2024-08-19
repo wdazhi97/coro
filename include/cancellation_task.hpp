@@ -112,7 +112,8 @@ public:
     auto await_suspend(std::coroutine_handle<> awaiting){
         if(m_handle.promise().get_task_state() == task_state::Canceled)
         {
-            awaiting.resume();
+            std::cout << "already cancelled" << std::endl;
+            return awaiting;
         }
         else
         {
@@ -122,7 +123,7 @@ public:
             });
             m_handle.promise().set_task_state(task_state::Start);
             m_handle.promise().set_pre_handle(awaiting);
-            return m_handle;
+            return std::coroutine_handle<>::from_address(m_handle.address());
         }
     };
 
@@ -134,13 +135,17 @@ public:
     };
 
     void on_cancel_request(){
+        std::cout << "start cancel request" << std::endl;
         if(m_handle.promise().get_task_state() == task_state::Canceled || m_handle.promise().get_task_state() == task_state::Complete)
         {
             return;
         }
         m_handle.promise().set_task_state(task_state::Canceled);
         //直接恢复自己
-        m_handle.resume();
+        if(!m_handle.done())
+        {
+            m_handle.resume();
+        }
     };
 
 
