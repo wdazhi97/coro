@@ -24,11 +24,11 @@ public:
                 sleepTime = rand() % 5 + 5;
                 std::thread([this, coroutine_handle]() {
                     std::this_thread::sleep_for(std::chrono::seconds(this->sleepTime));
+                    std::cout << "reach the time" << std::endl;
                     if(!coroutine_handle.done()) {
                         coroutine_handle.resume();
                     }
                 }).detach();
-                std::cout << "task resume after " << std::endl;
             }
             int await_resume() {
                 std::cout << "task resume after " << sleepTime  << "s" << std::endl;
@@ -45,6 +45,7 @@ public:
 cppcoro::cancellation_task cancel(cancel_token token) {
     std::cout << "start cancel 1" << std::endl;
     co_await wait_time_task();
+    std::cout << "end cancel 1" << std::endl;
 }
 
 cppcoro::cancellation_task cancel2(cancel_token token)
@@ -58,10 +59,13 @@ cppcoro::sync_task<int> test() {
     cancel_request req;
     auto token = req.token();
     std::thread([req]() mutable {
+        //std::cout << std::this_thread::get_id() << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));
         req.request_cancel();
+        //std::cout << "request finished" << std::endl;
     }).detach();
-    co_await cancel(token);
+    co_await cancel2(token);
+    std::cout << "task finished" << std::endl;
     co_return 1;
 }
 
@@ -69,6 +73,5 @@ cppcoro::sync_task<int> test() {
 
 int main() {
     auto result = test();
-    //std::cout << result.result() << std::endl;
     while(1){};
 }

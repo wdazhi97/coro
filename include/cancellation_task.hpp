@@ -132,6 +132,7 @@ public:
     };
 
     void await_resume() {
+        std::cout << "cancel task resume" << std::endl;
     };
 
     void on_cancel_request(){
