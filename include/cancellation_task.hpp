@@ -117,7 +117,7 @@ public:
         }
         else
         {
-            std::cout << "add call back" << std::endl;
+            std::cout << "add call back " << m_handle.address() << std::endl;
             m_handle.promise().register_callback([=, this]{
                 on_cancel_request();
             });
@@ -135,7 +135,7 @@ public:
     };
 
     void on_cancel_request(){
-        std::cout << "start cancel request" << std::endl;
+        std::cout << "start cancel request " << m_handle.address() << std::endl;
         if(m_handle.promise().get_task_state() == task_state::Canceled || m_handle.promise().get_task_state() == task_state::Complete)
         {
             return;

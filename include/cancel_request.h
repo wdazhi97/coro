@@ -21,7 +21,8 @@ public:
 
     void cancel(){
         m_state = static_cast<std::uint32_t> (cancel_state_type::CANCELED);
-        for(auto & call : call_backs)
+        std::cout << "call back size " << call_backs.size() << std::endl;
+        for(auto & call:call_backs)
         {
             call();
         }

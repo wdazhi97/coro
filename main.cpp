@@ -10,14 +10,7 @@
 class wait_time_task
 {
 public:
-    struct promise_type
-    {
-        std::suspend_always initial_suspend() noexcept {  return {}; }
-        std::suspend_never final_suspend() noexcept{ return {};}
-        wait_time_task get_return_object() noexcept { return {}; };
-        void unhandled_exception() {};
-        void return_void() noexcept {}
-    };
+
 public:
     auto operator co_await() const &noexcept
     {
@@ -47,9 +40,18 @@ public:
 };
 
 
+
+
 cppcoro::cancellation_task cancel(cancel_token token) {
-    //co_return;
+    std::cout << "start cancel 1" << std::endl;
     co_await wait_time_task();
+}
+
+cppcoro::cancellation_task cancel2(cancel_token token)
+{
+    std::cout << "start cancel 2" << std::endl;
+    co_await cancel(token);
+    std::cout << "end cancel 2" << std::endl;
 }
 
 cppcoro::sync_task<int> test() {
