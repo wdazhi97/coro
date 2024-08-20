@@ -11,6 +11,7 @@ __CPP_CORO_NS_BEGIN
 
 
 enum class task_result_state :uint8_t {
+    None,
     Cancel,
     Complete
 };
@@ -41,11 +42,23 @@ public:
 public:
 
     std::suspend_always initial_suspend() noexcept{return{};}
-    final_awaiter final_suspend() noexcept { state_ == task_state::Complete; return{};}
+    final_awaiter final_suspend() noexcept {
+        state_ = task_state::Complete;
+        if(result_state_ == task_result_state::None)
+        {
+            result_state_ = task_result_state::Complete;
+        }
+        return{};
+    }
 
     void set_task_state(task_state state)
     {
         state_ = state;
+    }
+
+    void set_task_result_state(task_result_state state)
+    {
+        result_state_ = state;
     }
 
     void set_pre_handle(std::coroutine_handle<> awaiting)
@@ -59,6 +72,7 @@ public:
     }
 
 protected:
+    task_result_state result_state_;
     std::coroutine_handle<> pre_handle;
     int32_t call_back_index;
     task_state state_;
@@ -75,10 +89,12 @@ public:
         if(token_.is_cancelled())
         {
             state_ = task_state::Canceled;
+            result_state_ = task_result_state::Cancel;
         }
         else
         {
             state_ = task_state::NotStart;
+            result_state_ = task_result_state::None;
         }
     };
 
@@ -103,6 +119,11 @@ public:
         token_.set_call_invalid(call_back_index);
     }
 
+    bool is_cancelled()
+    {
+        return token_.is_cancelled();
+    }
+
     void return_void(){};
 
     T& result() &{
@@ -116,8 +137,6 @@ public:
 
 private:
 
-
-    task_result_state result_state;
     cancel_token token_;
     T value_;
     std::exception_ptr exception = nullptr;
@@ -134,10 +153,12 @@ public:
         if(token_.is_cancelled())
         {
             state_ = task_state::Canceled;
+            result_state_ = task_result_state::Cancel;
         }
         else
         {
             state_ = task_state::NotStart;
+            result_state_ = task_result_state::None;
         }
     };
 
@@ -155,13 +176,17 @@ public:
         exception = std::current_exception();
     };
 
+    bool is_cancelled()
+    {
+        return token_.is_cancelled();
+    }
+
     void result(){
 
     }
 
     void return_void(){};
 private:
-    task_result_state result_state;
     cancel_token token_;
     std::exception_ptr exception = nullptr;
 };
@@ -212,7 +237,10 @@ public:
         {
             m_handle.promise().set_callback_invalid();
         }
-        std::cout << "cancel task resume " << std::endl;
+        if(m_handle.promise().is_cancelled())
+        {
+            m_handle.promise().set_task_result_state(task_result_state::Cancel);
+        }
         return m_handle.promise().result();
     };
 
