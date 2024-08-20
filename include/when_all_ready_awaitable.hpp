@@ -27,7 +27,7 @@ class when_all_ready_awaitble<std::tuple<Tasks ...>>
 {
 public:
 
-    using return_type = std::tuple<typename Tasks::return_type...>;
+    using return_type = std::tuple<typename std::conditional<std::is_void<typename Tasks::return_type>::value,void_value, typename Tasks::return_type>::type ...>;
     explicit when_all_ready_awaitble(Tasks&& ...tasks)
         noexcept(std::conjunction_v<std::is_nothrow_move_constructible<Tasks>...>)
         :counter_(sizeof...(Tasks))
@@ -123,7 +123,7 @@ private:
     template<std::size_t ...INDEX>
     return_type get_result(std::integer_sequence<std::size_t, INDEX...>) noexcept
     {
-        return std::make_tuple(std::get<INDEX>(tasks_).result()...);
+        return std::make_tuple(std::get<INDEX>(tasks_).non_void_result()...);
     }
 
 public:
