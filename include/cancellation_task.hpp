@@ -24,9 +24,10 @@ enum class task_state :uint8_t {
 };
 
 template<class T>
-class cancellation_promise {
-public:
+class cancellation_task;
 
+class cancellation_promise_base{
+public:
     class final_awaiter{
     public:
         bool await_ready() noexcept {return false;}
@@ -37,11 +38,37 @@ public:
         }
         void await_resume() noexcept{}
     };
+public:
 
     std::suspend_always initial_suspend() noexcept{return{};}
     final_awaiter final_suspend() noexcept { state_ == task_state::Complete; return{};}
 
-    class cancellation_task get_return_object();
+    void set_task_state(task_state state)
+    {
+        state_ = state;
+    }
+
+    void set_pre_handle(std::coroutine_handle<> awaiting)
+    {
+        pre_handle = awaiting;
+    }
+
+    auto get_task_state()
+    {
+        return state_;
+    }
+
+protected:
+    std::coroutine_handle<> pre_handle;
+    int32_t call_back_index;
+    task_state state_;
+};
+
+template<class T>
+class cancellation_promise : public cancellation_promise_base{
+public:
+
+    class cancellation_task<T> get_return_object();
 
     cancellation_promise(cancel_token token) : token_(token) {
         std::cout << "init cancel token" << std::endl;
@@ -55,24 +82,17 @@ public:
         }
     };
 
-    void unhandled_exception(){};
-
-    void return_type(){};
-
-    auto get_task_state()
+    void unhandled_exception()
     {
-        return state_;
-    }
+        exception = std::current_exception();
+    };
 
-    void set_task_state(task_state state)
-    {
-        state_ = state;
-    }
-
-    void set_pre_handle(std::coroutine_handle<> awaiting)
-    {
-        pre_handle = awaiting;
-    }
+    void return_type(T && in_value){
+        if(exception != nullptr){
+            std::rethrow_exception(exception);
+        }
+        value_ =  in_value;
+    };
 
     void register_callback(const std::function<void()> & call_back)
     {
@@ -85,16 +105,68 @@ public:
 
     void return_void(){};
 
+    T& result() &{
+        //std::cout << "lvaluse" << std::endl;
+        return value_;
+    }
+    T&& result() && {
+        //std::cout << "rvalue" << std::endl;
+        return std::move(value_);
+    }
+
 private:
 
-    std::coroutine_handle<> pre_handle;
+
     task_result_state result_state;
     cancel_token token_;
-    task_state state_;
-    int call_back_index;
+    T value_;
+    std::exception_ptr exception = nullptr;
 };
 
+template<>
+class cancellation_promise<void> : public cancellation_promise_base{
 
+public:
+    cancellation_task<void> get_return_object();
+
+    cancellation_promise(cancel_token token) : token_(token) {
+        std::cout << "init cancel token" << std::endl;
+        if(token_.is_cancelled())
+        {
+            state_ = task_state::Canceled;
+        }
+        else
+        {
+            state_ = task_state::NotStart;
+        }
+    };
+
+    void register_callback(const std::function<void()> & call_back)
+    {
+        call_back_index = token_.register_callback(call_back);
+    }
+
+    void set_callback_invalid(){
+        token_.set_call_invalid(call_back_index);
+    }
+
+    void unhandled_exception()
+    {
+        exception = std::current_exception();
+    };
+
+    void result(){
+
+    }
+
+    void return_void(){};
+private:
+    task_result_state result_state;
+    cancel_token token_;
+    std::exception_ptr exception = nullptr;
+};
+
+template<class T>
 class cancellation_task {
 public:
 
@@ -109,13 +181,10 @@ public:
 
     };
 
-    /*cancellation_task(cancel_token token): token_(token){
-        if(token.is_cancelled())
-        {
-            state_ = task_state::Canceled;
-        }
-        state_ = task_state::NotStart;
-    };*/
+    cancellation_task(const cancellation_task & other) = delete;
+
+    cancellation_task(cancellation_task && other) = delete;
+
     auto await_suspend(std::coroutine_handle<> awaiting){
         if(m_handle.promise().get_task_state() == task_state::Canceled)
         {
@@ -135,15 +204,16 @@ public:
     };
 
     bool await_ready() {
-        return false;
+        return m_handle && m_handle.done();
     };
 
-    void await_resume() {
+    T await_resume() {
         if(m_handle.promise().get_task_state() != task_state::CancelRequest)
         {
             m_handle.promise().set_callback_invalid();
         }
         std::cout << "cancel task resume " << std::endl;
+        return m_handle.promise().result();
     };
 
     void on_cancel_request(){
@@ -160,12 +230,16 @@ public:
         }
     };
 
-
+private:
     handle_type m_handle;
 };
 
     template<class T>
-    class cancellation_task cancellation_promise<T>::get_return_object() {
+    cancellation_task<T> cancellation_promise<T>::get_return_object() {
+        return std::coroutine_handle<cancellation_promise<T>>::from_promise(*this);
+    }
+
+    cancellation_task<void> cancellation_promise<void>::get_return_object() {
         return std::coroutine_handle<cancellation_promise<void>>::from_promise(*this);
     }
 
