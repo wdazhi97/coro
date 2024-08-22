@@ -124,7 +124,13 @@ public:
         return token_.is_cancelled();
     }
 
-    void return_void(){};
+    void  return_value(T &&in_value) {
+        if(exception != nullptr){
+            std::rethrow_exception(exception);
+        }
+        //std::cout << in_value << std::endl;
+        value_ =  in_value;
+    }
 
     T& result() &{
         //std::cout << "lvaluse" << std::endl;
@@ -149,7 +155,7 @@ public:
     cancellation_task<void> get_return_object();
 
     cancellation_promise(cancel_token token) : token_(token) {
-        std::cout << "init cancel token" << std::endl;
+        //std::cout << "init cancel token" << std::endl;
         if(token_.is_cancelled())
         {
             state_ = task_state::Canceled;
@@ -184,8 +190,8 @@ public:
     void result(){
 
     }
+    void return_value(){};
 
-    void return_void(){};
 private:
     cancel_token token_;
     std::exception_ptr exception = nullptr;
@@ -195,7 +201,7 @@ template<class T>
 class cancellation_task {
 public:
 
-    using promise_type = cancellation_promise<void>;
+    using promise_type = cancellation_promise<T>;
     using handle_type = std::coroutine_handle<promise_type>;
 
     ~cancellation_task(){
@@ -245,7 +251,7 @@ public:
                 return m_handle && m_handle.done();
             };
 
-            T await_resume() {
+            decltype(auto) await_resume() {
                 if(m_handle.promise().get_task_state() != task_state::CancelRequest)
                 {
                     m_handle.promise().set_callback_invalid();

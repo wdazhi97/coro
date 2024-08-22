@@ -49,7 +49,7 @@ public:
 
 
 
-cppcoro::cancellation_task<void> cancel(cancel_token token) {
+cppcoro::cancellation_task<int> cancel(cancel_token token) {
     std::cout << "start cancel 1" << std::endl;
     co_await wait_time_task();
     std::cout << "end cancel 1" << std::endl;

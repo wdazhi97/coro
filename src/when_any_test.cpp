@@ -43,7 +43,7 @@ public:
                 }).detach();
             }
             int await_resume() {
-                std::cout << "task resume after " << sleepTime  << "s" << std::endl;
+                std::cout << "task resume after " << sleepTime  << "s " << std::chrono::system_clock::now() << std::endl;
                 return sleepTime;
             }
 
@@ -60,13 +60,14 @@ public:
 
 
 
-cppcoro::cancellation_task<void> cancel(cancel_token token) {
-    std::cout << "start cancel 1" << std::endl;
-    co_await wait_time_task();
-    std::cout << "end cancel 1" << std::endl;
+cppcoro::cancellation_task<int> cancel(cancel_token token) {
+    std::cout << "start coroutine " << std::chrono::system_clock::now() << std::endl;
+    auto x = co_await wait_time_task();
+    std::cout << "end coroutine " << std::chrono::system_clock::now() << std::endl;
+    co_return x;
 }
 
-cppcoro::cancellation_task<void> cancel2(cancel_token token)
+cppcoro::cancellation_task<int> cancel2(cancel_token token)
 {
     std::cout << "start cancel 2" << std::endl;
     co_await cancel(token);
@@ -83,6 +84,7 @@ cppcoro::sync_task<int> test() {
     //     //std::cout << "request finished" << std::endl;
     // }).detach();
     auto [index, tasks] = co_await cppcoro::when_any_ready(&req, cancel(token), cancel(token), cancel(token));
+    std::cout << "Task0:" << std::get<0>(tasks) << " Task1:"  << std::get<1>(tasks)  << " Task2" << std::get<2>(tasks) << " " <<std::endl;
     std::cout << "task finished result: " << index << std::endl;
     co_return 1;
 }
@@ -91,6 +93,6 @@ cppcoro::sync_task<int> test() {
 
 int main() {
     auto result = test();
-    std::cout << "main resu" <<std::endl;
+    //std::cout << "main resu" <<std::endl;
     while(1){};
 }

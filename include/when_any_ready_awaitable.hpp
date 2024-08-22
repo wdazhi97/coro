@@ -27,7 +27,7 @@ class when_any_ready_awaitble<std::tuple<Tasks ...>>
 {
 public:
 
-    using tasks_return_type = std::tuple<typename std::conditional<std::is_void<typename Tasks::return_type>::value,void_value, typename Tasks::return_type>::type ...>;
+    using tasks_return_type = std::tuple<typename std::conditional<std::is_void<typename Tasks::return_type>::value,void_value, typename std::remove_reference<typename Tasks::return_type>::type>::type ...>;
     using return_type = std::tuple<int, tasks_return_type>;
 
     explicit when_any_ready_awaitble(cancel_request* cancel_request, Tasks&& ...tasks)
