@@ -10,3 +10,6 @@ add_executable(when_all_multi_level
 
 
 add_executable(cancel cancel.cpp)
+add_executable(when_any_test
+        when_any_test.cpp
+)

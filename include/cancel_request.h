@@ -28,6 +28,7 @@ public:
 
     void cancel(){
         m_state = static_cast<std::uint32_t> (cancel_state_type::CANCELED);
+        std::cout << "cancel_state" << std::endl;
         for(auto call : std::views::reverse(call_backs)) {
             if(call.is_valid)
             {
@@ -107,7 +108,7 @@ public:
 
     void request_cancel()
     {
-        if(m_state)
+        if(m_state && !m_state->is_cancelled())
         {
             m_state->cancel();
         }
