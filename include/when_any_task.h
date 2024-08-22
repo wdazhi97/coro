@@ -35,7 +35,7 @@ public:
             bool await_ready() const noexcept { return false; }
             void await_suspend(corotinue_handle_t coro) const noexcept
             {
-                return coro.promise().counter_->on_sub_awaitble_completed();
+                return coro.promise().counter_->on_sub_awaitble_completed(coro.promise().index_);
             }
             void await_resume() const noexcept {}
         };
