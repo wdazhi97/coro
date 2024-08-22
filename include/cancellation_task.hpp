@@ -206,11 +206,54 @@ public:
 
     };
 
-    cancellation_task(const cancellation_task & other) = delete;
 
-    cancellation_task(cancellation_task && other) = delete;
+    auto operator co_await() {
+        struct awaiter{
+            awaiter(cancellation_task * task,const handle_type & m_handle) : task_(task), m_handle(m_handle)
+            {
+            };
 
-    auto await_suspend(std::coroutine_handle<> awaiting){
+            auto await_suspend(std::coroutine_handle<> awaiting){
+                if(m_handle.promise().get_task_state() == task_state::Canceled)
+                {
+                    std::cout << "already cancelled" << std::endl;
+                    return awaiting;
+                }
+                else
+                {
+                    std::cout << "add call back " << m_handle.address() << std::endl;
+                    m_handle.promise().register_callback([=, this]{
+                        task_->on_cancel_request();
+                    });
+                    m_handle.promise().set_task_state(task_state::Start);
+                    m_handle.promise().set_pre_handle(awaiting);
+                    return std::coroutine_handle<>::from_address(m_handle.address());
+                }
+            };
+
+            bool await_ready() {
+                return m_handle && m_handle.done();
+            };
+
+            T await_resume() {
+                if(m_handle.promise().get_task_state() != task_state::CancelRequest)
+                {
+                    m_handle.promise().set_callback_invalid();
+                }
+                if(m_handle.promise().is_cancelled())
+                {
+                    m_handle.promise().set_task_result_state(task_result_state::Cancel);
+                }
+                return m_handle.promise().result();
+            };
+
+            cancellation_task * task_;
+            handle_type m_handle;
+        };
+        return awaiter{this, m_handle};
+    }
+
+    /*auto await_suspend(std::coroutine_handle<> awaiting){
         if(m_handle.promise().get_task_state() == task_state::Canceled)
         {
             std::cout << "already cancelled" << std::endl;
@@ -242,7 +285,7 @@ public:
             m_handle.promise().set_task_result_state(task_result_state::Cancel);
         }
         return m_handle.promise().result();
-    };
+    };*/
 
     void on_cancel_request(){
         std::cout << "start cancel request " << m_handle.address() << std::endl;
