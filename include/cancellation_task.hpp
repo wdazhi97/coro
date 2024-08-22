@@ -206,6 +206,15 @@ public:
 
     };
 
+    cancellation_task(const cancellation_task & other) = delete;
+
+    cancellation_task& operator=(const cancellation_task&other) = delete;
+
+    cancellation_task(cancellation_task && other){
+        m_handle = other.m_handle;
+        other.m_handle = nullptr;
+    }
+
 
     auto operator co_await() {
         struct awaiter{
