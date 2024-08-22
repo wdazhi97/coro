@@ -27,7 +27,9 @@ class when_any_ready_awaitble<std::tuple<Tasks ...>>
 {
 public:
 
-    using return_type = std::tuple<typename std::conditional<std::is_void<typename Tasks::return_type>::value,void_value, typename Tasks::return_type>::type ...>;
+    using tasks_return_type = std::tuple<typename std::conditional<std::is_void<typename Tasks::return_type>::value,void_value, typename Tasks::return_type>::type ...>;
+    using return_type = std::tuple<int, tasks_return_type>;
+
     explicit when_any_ready_awaitble(cancel_request* cancel_request, Tasks&& ...tasks)
         noexcept(std::conjunction_v<std::is_nothrow_move_constructible<Tasks>...>)
         :counter_(sizeof...(Tasks), cancel_request)
@@ -63,7 +65,7 @@ public:
 
             return_type await_resume() noexcept
             {
-                return awaitable_.get_result(std::make_integer_sequence<std::size_t, sizeof...(Tasks)>{});
+                return std::make_tuple(awaitable_.counter_.get_result_index(), awaitable_.get_result(std::make_integer_sequence<std::size_t, sizeof...(Tasks)>{}));
             }
         private:
             when_any_ready_awaitble &awaitable_;
@@ -92,7 +94,7 @@ public:
             //返回右值引用有问题
             return_type await_resume() noexcept
             {
-                return std::move(awaitable_.get_result(std::make_integer_sequence<std::size_t, sizeof...(Tasks)>{}));
+                return std::move(std::make_tuple(awaitable_.counter_.get_result_index(), awaitable_.get_result(std::make_integer_sequence<std::size_t, sizeof...(Tasks)>{})));
             }
         private:
             when_any_ready_awaitble &awaitable_;
@@ -121,7 +123,7 @@ private:
     }
 
     template<std::size_t ...INDEX>
-    return_type get_result(std::integer_sequence<std::size_t, INDEX...>) noexcept
+    tasks_return_type get_result(std::integer_sequence<std::size_t, INDEX...>) noexcept
     {
         return std::make_tuple(std::get<INDEX>(tasks_).non_void_result()...);
     }

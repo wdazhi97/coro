@@ -62,6 +62,7 @@ public:
     void start(when_any_counter &counter) noexcept
     {
         counter_ = &counter;
+        index_ = counter.get_cur_index();
         corotinue_handle_t::from_promise(*this).resume();
     }
 
@@ -86,6 +87,7 @@ private:
     }
 private:
     when_any_counter *counter_;
+    int index_;
     std::exception_ptr exception_;
     std::add_pointer_t<Result> result_;
 };
@@ -112,7 +114,7 @@ public:
             bool await_ready() const noexcept { return false; }
             void await_suspend(corotinue_handle_t coro) const noexcept
             {
-                return coro.promise().counter_->on_sub_awaitble_completed();
+                return coro.promise().counter_->on_sub_awaitble_completed(coro.promise().index_);
             }
             void await_resume() const noexcept {}
         };
@@ -132,6 +134,7 @@ public:
     void start(when_any_counter &counter) noexcept
     {
         counter_ = &counter;
+        index_ = counter.get_cur_index();
         corotinue_handle_t::from_promise(*this).resume();
     }
 
@@ -145,6 +148,7 @@ public:
 
 private:
     when_any_counter *counter_;
+    int index_;
     std::exception_ptr exception_;
 };
 

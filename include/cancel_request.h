@@ -114,6 +114,11 @@ public:
         }
     }
 
+    bool is_cancelled()
+    {
+        return m_state && m_state->is_cancelled();
+    }
+
 private:
     std::shared_ptr<cancel_state> m_state;
 };

@@ -31,8 +31,8 @@ public:
                 return false;
             }
             void await_suspend(std::coroutine_handle<> coroutine_handle) {
-                sleepTime = rand() % 5 + 5 + tmp_time;
-                tmp_time += 5;
+                sleepTime = 6 + tmp_time;
+                tmp_time -= 1;
 
                 std::thread([this, coroutine_handle]() {
                     std::this_thread::sleep_for(std::chrono::seconds(this->sleepTime));
@@ -82,8 +82,8 @@ cppcoro::sync_task<int> test() {
     //     req.request_cancel();
     //     //std::cout << "request finished" << std::endl;
     // }).detach();
-    co_await cppcoro::when_any_ready(&req, cancel(token), cancel(token), cancel(token));
-    std::cout << "task finished" << std::endl;
+    auto [index, tasks] = co_await cppcoro::when_any_ready(&req, cancel(token), cancel(token), cancel(token));
+    std::cout << "task finished result: " << index << std::endl;
     co_return 1;
 }
 
