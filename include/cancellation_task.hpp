@@ -85,7 +85,7 @@ public:
     class cancellation_task<T> get_return_object();
 
     cancellation_promise(cancel_token token) : token_(token) {
-        std::cout << "init cancel token" << std::endl;
+        //std::cout << "init cancel token" << std::endl;
         if(token_.is_cancelled())
         {
             state_ = task_state::Canceled;
@@ -199,11 +199,11 @@ public:
     using handle_type = std::coroutine_handle<promise_type>;
 
     ~cancellation_task(){
-        std::cout << "cancel task destroy" << std::endl;
+        //std::cout << "cancel task destroy" << std::endl;
     }
 
     cancellation_task(handle_type h):m_handle(h){
-
+        //std::cout << "task construct " << std::endl;
     };
 
     cancellation_task(const cancellation_task & other) = delete;
@@ -211,6 +211,7 @@ public:
     cancellation_task& operator=(const cancellation_task&other) = delete;
 
     cancellation_task(cancellation_task && other){
+        //std::cout << "move task" <<std::endl;
         m_handle = other.m_handle;
         other.m_handle = nullptr;
     }
@@ -230,7 +231,7 @@ public:
                 }
                 else
                 {
-                    std::cout << "add call back " << m_handle.address() << std::endl;
+                    //std::cout << "add call back " << m_handle.address() << std::endl;
                     m_handle.promise().register_callback([=, this]{
                         task_->on_cancel_request();
                     });
@@ -297,7 +298,6 @@ public:
     };*/
 
     void on_cancel_request(){
-        std::cout << "start cancel request " << m_handle.address() << std::endl;
         if(m_handle.promise().get_task_state() == task_state::Canceled || m_handle.promise().get_task_state() == task_state::Complete)
         {
             return;
