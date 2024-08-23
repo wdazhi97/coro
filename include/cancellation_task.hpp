@@ -84,7 +84,8 @@ public:
 
     class cancellation_task<T> get_return_object();
 
-    cancellation_promise(cancel_token token) : token_(token) {
+    template<class ...Arg>
+    cancellation_promise(cancel_token token, Arg && ...arg) : token_(token) {
         //std::cout << "init cancel token" << std::endl;
         if(token_.is_cancelled())
         {
@@ -154,7 +155,8 @@ class cancellation_promise<void> : public cancellation_promise_base{
 public:
     cancellation_task<void> get_return_object();
 
-    cancellation_promise(cancel_token token) : token_(token) {
+    template<class... Arg>
+    cancellation_promise(cancel_token token, Arg && ...arg) : token_(token) {
         //std::cout << "init cancel token" << std::endl;
         if(token_.is_cancelled())
         {
