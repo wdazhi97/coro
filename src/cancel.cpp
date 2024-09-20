@@ -50,7 +50,7 @@ public:
                 sleepTime = rand() % 5 + 5;
                 std::thread([this, coroutine_handle]() {
                     std::this_thread::sleep_for(std::chrono::seconds(this->sleepTime));
-                    std::cout << "reach the time " << this->sleepTime <<  " " << std::chrono::system_clock::now() <<std::endl;
+                    //std::cout << "reach the time " << this->sleepTime <<  " " << std::chrono::system_clock::now() <<std::endl;
                     if(!coroutine_handle.done()) {
                         coroutine_handle.resume();
                     }
@@ -69,16 +69,16 @@ public:
 
 
 cancellation_task<int> cancel(cancel_token token) {
-    std::cout << "start coroutine " << std::chrono::system_clock::now() << std::endl;
+    //std::cout << "start coroutine " << std::chrono::system_clock::now() << std::endl;
     co_await wait_time_task();
-    std::cout << "end coroutine " << std::chrono::system_clock::now() << std::endl;
+    //std::cout << "end coroutine " << std::chrono::system_clock::now() << std::endl;
 }
 
 cppcoro::cancellation_task<void> cancel2(cancel_token token)
 {
-    std::cout << "start cancel 2" << std::chrono::system_clock::now() << std::endl;
+    //std::cout << "start cancel 2" << std::chrono::system_clock::now() << std::endl;
     co_await cancel(token);
-    std::cout << "end cancel 2" << std::chrono::system_clock::now() << std::endl;
+    //std::cout << "end cancel 2" << std::chrono::system_clock::now() << std::endl;
 }
 
 outer_task outer_tasks()
@@ -91,7 +91,7 @@ outer_task outer_tasks()
         //std::cout << std::this_thread::get_id() << std::endl;
         std::this_thread::sleep_for(std::chrono::seconds(1));
         req.request_cancel();
-        std::cout << "request finished" << std::chrono::system_clock::now() << std::endl;
+        //std::cout << "request finished" << std::chrono::system_clock::now() << std::endl;
     }).detach();
     auto [task1, task2, task3] = co_await when_all_ready(
             cancel(token),

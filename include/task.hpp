@@ -37,7 +37,7 @@ protected:
 };
 
 template<class T>
-class promise_type final : public promise_base {
+class Promise_type final : public promise_base {
 public:
 
     void  return_value(T &&in_value) {
@@ -63,7 +63,7 @@ public:
         return std::move(value);
     }
 
-    ~promise_type(){
+    ~Promise_type(){
         //std::cout << "promise des" << std::endl;
     }
 
@@ -75,7 +75,7 @@ private:
 };
 
 template<>
-class promise_type<void> final : public promise_base{
+class Promise_type<void> final : public promise_base{
 public:
     Task<void> get_return_object();
 
@@ -95,7 +95,7 @@ private:
 template<class T>
 class Task{
 public:
-    using promise_type = promise_type<T>;
+    using promise_type = Promise_type<T>;
     using handle_type= std::coroutine_handle<promise_type>;
     Task(handle_type h):m_handle(h) {
 
@@ -152,13 +152,13 @@ private:
 };
 
 template<class T>
-Task<T> promise_type<T>::get_return_object()
+Task<T> Promise_type<T>::get_return_object()
 {
-    return std::coroutine_handle<promise_type<T>>::from_promise(*this);
+    return std::coroutine_handle<Promise_type<T>>::from_promise(*this);
 }
 
-Task<void> promise_type<void>::get_return_object() {
-    return std::coroutine_handle<promise_type<void>>::from_promise(*this);
+Task<void> Promise_type<void>::get_return_object() {
+    return std::coroutine_handle<Promise_type<void>>::from_promise(*this);
 }
 __CPP_CORO_NS_END
 #endif //MTCORO_TASK_HPP

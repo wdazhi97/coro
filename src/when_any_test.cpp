@@ -43,7 +43,7 @@ public:
                 }).detach();
             }
             int await_resume() {
-                std::cout << "task resume after " << sleepTime  << "s " << std::chrono::system_clock::now() << std::endl;
+                //std::cout << "task resume after " << sleepTime  << "s " << std::chrono::system_clock::now() << std::endl;
                 return sleepTime;
             }
 
@@ -61,9 +61,9 @@ public:
 
 
 cppcoro::cancellation_task<int> cancel(cancel_token token) {
-    std::cout << "start coroutine " << std::chrono::system_clock::now() << std::endl;
+    //std::cout << "start coroutine " << std::chrono::system_clock::now() << std::endl;
     auto x = co_await wait_time_task();
-    std::cout << "end coroutine " << std::chrono::system_clock::now() << std::endl;
+    //std::cout << "end coroutine " << std::chrono::system_clock::now() << std::endl;
     co_return x;
 }
 

@@ -7,3 +7,5 @@ add_subdirectory(src)
 
 add_executable(Coroutine main.cpp
         share_task.hpp)
+
+target_link_libraries(Coroutine pthread)
