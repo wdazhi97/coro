@@ -37,6 +37,8 @@ public:
 
 private:
 
+
+
     T value_;
 };
 
@@ -52,7 +54,7 @@ public:
 
     sync_task& operator=(const sync_task &) = delete;
 
-    sync_task(const sync_task && other) noexcept :m_handle(other.m_handle) {
+    sync_task(sync_task && other) noexcept :m_handle(other.m_handle) {
         other.m_handle = nullptr;
     }
 
@@ -62,6 +64,20 @@ public:
     T result(){
         return m_handle.promise().result();
     }
+
+    auto operator co_await() const {
+        struct awaiter {
+            explicit awaiter(std::coroutine_handle<promise_type> handle):m_handle(handle){}
+            bool await_ready(){
+                return m_handle && m_handle.done();
+            }
+            T await_resume() {return m_handle.promise().result();}
+            auto await_suspend(std::coroutine_handle<> h) {return m_handle;}
+            std::coroutine_handle<promise_type> m_handle;
+        };
+        return awaiter(m_handle);
+    }
+
 private:
     std::coroutine_handle<promise_type> m_handle;
 };

@@ -11,8 +11,8 @@ __CPP_CORO_NS_BEGIN
 template<class T>
 class Task;
 
-class promise_base{
 
+class promise_base{
     class final_awaiter{
     public:
         bool await_ready() noexcept {return false;}
@@ -105,7 +105,7 @@ public:
 
     Task& operator=(const Task &) = delete;
 
-    Task(const Task && other) {
+    Task(Task && other) {
         m_handle = other.m_handle;
         other.m_handle = nullptr;
     }
@@ -135,6 +135,7 @@ private:
         awaiter(handle_type h) : m_coroutine(h){}
 
         std::coroutine_handle<promise_type> await_suspend(std::coroutine_handle<> awaiting){
+            std::cout << "await_suspend" << std::endl;
             m_coroutine.promise().set_pre_handle(awaiting);
             return m_coroutine;
         }

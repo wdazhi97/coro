@@ -8,6 +8,8 @@
 #include <coroutine>
 #include <thread>
 #include <sync_task.hpp>
+#include <task.hpp>
+#include <when_all_ready_task.h>
 
 struct AsyncClientCall {
 
@@ -110,8 +112,9 @@ public:
     grpc::CompletionQueue cq_;
 };
 
-cppcoro::sync_task<int> GetAddress(AddressClient & Client)
+cppcoro::Task<int> GetAddress(AddressClient & Client)
 {
+    std::cout << "Start Get Address " << std::endl;
     for(int i = 0; i < 100; i++)
     {
         std::string user = "John";
@@ -126,6 +129,17 @@ cppcoro::sync_task<int> GetAddress(AddressClient & Client)
     co_return 0;
 }
 
+cppcoro::sync_task<int> GetAddressStart(AddressClient & Client)
+{
+    co_return co_await GetAddress(Client);
+}
+
+cppcoro::sync_task<int> GetAllTest(AddressClient & Client)
+{
+    auto [task1, task2] = co_await cppcoro::when_all_ready(GetAddress(Client),GetAddress(Client));
+    co_return 0;
+}
+
 int main(int argc, char* argv[])
 {
     // Setup request
@@ -137,7 +151,9 @@ int main(int argc, char* argv[])
     auto channel = grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials());
     AddressClient greeter(channel);
 
-    GetAddress(greeter);
+    //GetAddressStart(greeter);
+    GetAllTest(greeter);
+    
     //std::thread thread_ = std::thread(&AddressClient::AsyncCompleteRpc, &greeter);
     //std::unique_ptr<expcmake::AddressBook::Stub> stub = expcmake::AddressBook::NewStub(channel);
     //grpc::ClientContext context;
