@@ -8,3 +8,13 @@ build
 .vscode
 
 thirdparty/dist
+
+thirdparty/dist/lib/libgrpc_unsecure.a
+
+thirdparty/dist/lib64/libprotoc.a
+
+thirdparty/dist/lib/libgrpc.a
+
+thirdparty/boost_1_82_0.tar.gz
+
+thirdparty/dist/lib/libgrpc_authorization_provider.a
