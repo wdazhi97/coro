@@ -135,7 +135,6 @@ private:
         awaiter(handle_type h) : m_coroutine(h){}
 
         std::coroutine_handle<promise_type> await_suspend(std::coroutine_handle<> awaiting){
-            std::cout << "await_suspend" << std::endl;
             m_coroutine.promise().set_pre_handle(awaiting);
             return m_coroutine;
         }

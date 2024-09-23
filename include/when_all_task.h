@@ -61,7 +61,6 @@ public:
 
     void start(when_all_counter &counter) noexcept
     {
-        std::cout << "start counter " << std::endl;
         counter_ = &counter;
         corotinue_handle_t::from_promise(*this).resume();
     }
@@ -132,7 +131,6 @@ public:
 
     void start(when_all_counter &counter) noexcept
     {
-        std::cout << "start counter " << std::endl;
         counter_ = &counter;
         corotinue_handle_t::from_promise(*this).resume();
     }
@@ -227,7 +225,6 @@ template<typename Awaitable,
          std::enable_if_t<!std::is_void_v<Result>, int> = 0>
     when_all_task<Result> make_when_all_task(Awaitable awaitable)
 {
-    std::cout << "when all task start " << std::endl;
     co_yield co_await static_cast<Awaitable &&>(awaitable);
 }
 

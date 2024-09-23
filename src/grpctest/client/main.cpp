@@ -9,7 +9,12 @@
 #include <thread>
 #include <sync_task.hpp>
 #include <task.hpp>
+#include <vector>
 #include <when_all_ready_task.h>
+
+
+auto start = std::chrono::high_resolution_clock::now();
+auto end = std::chrono::high_resolution_clock::now();
 
 struct AsyncClientCall {
 
@@ -77,12 +82,14 @@ public:
         return call;
     }
 
-    void AsyncCompleteRpc() {
+    void AsyncCompleteRpc(int total) {
         void* got_tag;
         bool ok = false;
 
+        static int seq = 0;
+
         // Block until the next result is available in the completion queue "cq".
-        while (cq_.Next(&got_tag, &ok)) {
+        while (seq < total && cq_.Next(&got_tag, &ok)) {
         // The tag in this example is the memory location of the call object
             AsyncClientCall* call = static_cast<AsyncClientCall*>(got_tag);
 
@@ -94,6 +101,7 @@ public:
             else
                 std::cout << "RPC failed" << std::endl;*/
             call->resume();
+            seq++;
 
             // Once we're complete, deallocate the call object.
             //delete call;
@@ -114,18 +122,14 @@ public:
 
 cppcoro::Task<int> GetAddress(AddressClient & Client)
 {
-    std::cout << "Start Get Address " << std::endl;
-    for(int i = 0; i < 100; i++)
-    {
-        std::string user = "John";
-        auto * call = Client.GetAddress(user);
-        grpc::Status status = co_await *call;
-        if(call->status.ok())
-            std::cout << "Greeter received: " << call->reply.name() << " " << i << std::endl;
-        else
-            std::cout << "RPC failed" << std::endl;
-        delete call;
-    }
+    std::string user = "John";
+    auto * call = Client.GetAddress(user);
+    grpc::Status status = co_await *call;
+    if(call->status.ok()){}
+        //std::cout << "Greeter received: " << call->reply.name()  << std::endl;
+    else
+        std::cout << "RPC failed" << std::endl;
+    delete call;
     co_return 0;
 }
 
@@ -136,7 +140,12 @@ cppcoro::sync_task<int> GetAddressStart(AddressClient & Client)
 
 cppcoro::sync_task<int> GetAllTest(AddressClient & Client)
 {
-    auto [task1, task2] = co_await cppcoro::when_all_ready(GetAddress(Client),GetAddress(Client));
+    std::vector<cppcoro::Task<int>> tasks;
+    for(int i = 0; i < 10000; ++i)
+    {
+        tasks.emplace_back(GetAddress(Client));
+    }
+    co_await cppcoro::when_all_ready(std::move(tasks));
     co_return 0;
 }
 
@@ -151,8 +160,16 @@ int main(int argc, char* argv[])
     auto channel = grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials());
     AddressClient greeter(channel);
 
+    start = std::chrono::high_resolution_clock::now();
+    /*for(int i = 0 ; i < 10000; i++)
+    {
     //GetAddressStart(greeter);
+        GetAddressStart(greeter);
+    }*/
     GetAllTest(greeter);
+    end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> duration = end - start;
+    std::cout << "执行时间: " << duration.count() << " 秒" << std::endl;
     
     //std::thread thread_ = std::thread(&AddressClient::AsyncCompleteRpc, &greeter);
     //std::unique_ptr<expcmake::AddressBook::Stub> stub = expcmake::AddressBook::NewStub(channel);
@@ -168,7 +185,7 @@ int main(int argc, char* argv[])
     std::cout << "Zip:  " << result.zip() << std::endl;
     std::cout << "Street: " << result.street() << std::endl;
     std::cout << "Country: " << result.country() << std::endl;*/
-    greeter.AsyncCompleteRpc();
+    greeter.AsyncCompleteRpc(10000);
     std::cout << "Press control-c to quit" << std::endl << std::endl;
     //thread_.join(); 
 
