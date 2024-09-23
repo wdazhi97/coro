@@ -232,7 +232,7 @@ public:
             };
 
             auto await_suspend(std::coroutine_handle<> awaiting){
-                if(m_handle.promise().get_task_state() == task_state::Canceled)
+                if(m_handle.promise().get_task_state() == task_state::Canceled || m_handle.promise().is_cancelled())
                 {
                     std::cout << "already cancelled" << std::endl;
                     return awaiting;

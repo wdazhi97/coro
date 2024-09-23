@@ -32,13 +32,21 @@ public:
             }
             void await_suspend(std::coroutine_handle<> coroutine_handle) {
                 sleepTime = 6 + tmp_time;
-                tmp_time -= 1;
+                tmp_time += 1;
+
+                if (sleepTime == 7) {
+                    coroutine_handle.resume();
+                    return;
+                }
 
                 std::thread([this, coroutine_handle]() {
                     std::this_thread::sleep_for(std::chrono::seconds(this->sleepTime));
-                    std::cout << "reach the time " << this->sleepTime << std::endl;
                     if(!coroutine_handle.done()) {
+                        std::cout << "reach the time, resume success " << std::endl;
                         coroutine_handle.resume();
+                    }
+                    else {
+                        std::cout << "reach the time, do nothing" << std::endl;
                     }
                 }).detach();
             }
@@ -61,7 +69,7 @@ public:
 
 
 cppcoro::cancellation_task<int> cancel(cancel_token token) {
-    //std::cout << "start coroutine " << std::chrono::system_clock::now() << std::endl;
+    std::cout << "start custom function " << std::endl;
     auto x = co_await wait_time_task();
     //std::cout << "end coroutine " << std::chrono::system_clock::now() << std::endl;
     co_return x;
@@ -84,7 +92,7 @@ cppcoro::sync_task<int> test() {
     //     //std::cout << "request finished" << std::endl;
     // }).detach();
     auto [index, tasks] = co_await cppcoro::when_any_ready(&req, cancel(token), cancel(token), cancel(token));
-    std::cout << "Task0:" << std::get<0>(tasks) << " Task1:"  << std::get<1>(tasks)  << " Task2" << std::get<2>(tasks) << " " <<std::endl;
+    std::cout << "Task0:" << std::get<0>(tasks) << " Task1:"  << std::get<1>(tasks)  << " Task2:" << std::get<2>(tasks) << " " <<std::endl;
     std::cout << "task finished result: " << index << std::endl;
     co_return 1;
 }
