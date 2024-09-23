@@ -4,7 +4,10 @@ project(Coroutine)
 set(CMAKE_CXX_STANDARD 20)
 
 add_subdirectory(src)
+
+IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
 add_subdirectory(proto)
+endif()
 
 #set(protobuf_DIR thirdparty/dist/lib64/cmake/protobuf)
 #set(absl_DIR thirdparty/dist/lib64/cmake/absl)
