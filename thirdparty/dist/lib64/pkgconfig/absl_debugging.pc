@@ -1,0 +1,12 @@
+prefix=/data/home/dazhiwang/workspace/coro/thirdparty/dist
+exec_prefix=${prefix}
+libdir=/data/home/dazhiwang/workspace/coro/thirdparty/dist/lib64
+includedir=/data/home/dazhiwang/workspace/coro/thirdparty/dist/include
+
+Name: absl_debugging
+Description: Abseil debugging library
+URL: https://abseil.io/
+Version: 20240116
+Requires: absl_stacktrace = 20240116, absl_leak_check = 20240116
+Libs: -L${libdir}  
+Cflags: -I${includedir} -DNOMINMAX

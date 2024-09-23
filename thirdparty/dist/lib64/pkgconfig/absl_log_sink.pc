@@ -1,0 +1,12 @@
+prefix=/data/home/dazhiwang/workspace/coro/thirdparty/dist
+exec_prefix=${prefix}
+libdir=/data/home/dazhiwang/workspace/coro/thirdparty/dist/lib64
+includedir=/data/home/dazhiwang/workspace/coro/thirdparty/dist/include
+
+Name: absl_log_sink
+Description: Abseil log_sink library
+URL: https://abseil.io/
+Version: 20240116
+Requires: absl_config = 20240116, absl_log_entry = 20240116
+Libs: -L${libdir}  -labsl_log_sink 
+Cflags: -I${includedir} -DNOMINMAX

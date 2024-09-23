@@ -18,3 +18,5 @@ target_link_libraries(awaiter pthread)
 target_link_libraries(when_all_multi_level pthread)
 target_link_libraries(cancel pthread)
 target_link_libraries(when_any_test pthread)
+
+add_subdirectory(grpctest)

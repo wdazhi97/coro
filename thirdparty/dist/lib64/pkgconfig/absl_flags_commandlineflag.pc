@@ -1,0 +1,12 @@
+prefix=/data/home/dazhiwang/workspace/coro/thirdparty/dist
+exec_prefix=${prefix}
+libdir=/data/home/dazhiwang/workspace/coro/thirdparty/dist/lib64
+includedir=/data/home/dazhiwang/workspace/coro/thirdparty/dist/include
+
+Name: absl_flags_commandlineflag
+Description: Abseil flags_commandlineflag library
+URL: https://abseil.io/
+Version: 20240116
+Requires: absl_config = 20240116, absl_fast_type_id = 20240116, absl_flags_commandlineflag_internal = 20240116, absl_optional = 20240116, absl_strings = 20240116
+Libs: -L${libdir}  -labsl_flags_commandlineflag 
+Cflags: -I${includedir} -DNOMINMAX

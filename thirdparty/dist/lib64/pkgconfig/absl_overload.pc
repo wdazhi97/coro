@@ -1,0 +1,12 @@
+prefix=/data/home/dazhiwang/workspace/coro/thirdparty/dist
+exec_prefix=${prefix}
+libdir=/data/home/dazhiwang/workspace/coro/thirdparty/dist/lib64
+includedir=/data/home/dazhiwang/workspace/coro/thirdparty/dist/include
+
+Name: absl_overload
+Description: Abseil overload library
+URL: https://abseil.io/
+Version: 20240116
+Requires: absl_meta = 20240116
+Libs: -L${libdir}  
+Cflags: -I${includedir} -DNOMINMAX

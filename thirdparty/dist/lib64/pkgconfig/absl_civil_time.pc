@@ -1,0 +1,12 @@
+prefix=/data/home/dazhiwang/workspace/coro/thirdparty/dist
+exec_prefix=${prefix}
+libdir=/data/home/dazhiwang/workspace/coro/thirdparty/dist/lib64
+includedir=/data/home/dazhiwang/workspace/coro/thirdparty/dist/include
+
+Name: absl_civil_time
+Description: Abseil civil_time library
+URL: https://abseil.io/
+Version: 20240116
+Requires:
+Libs: -L${libdir}  -labsl_civil_time 
+Cflags: -I${includedir} -DNOMINMAX

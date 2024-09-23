@@ -1,0 +1,1 @@
+cmake -DgRPC_INSTALL=ON -DCMAKE_INSTALL_PREFIX=/data/home/dazhiwang/workspace/coro/thirdparty/dist -DgRPC_ZLIB_PROVIDER=package  ../
