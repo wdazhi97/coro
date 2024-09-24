@@ -66,7 +66,11 @@ class sync_promise<void>{
 
         template<class promise>
         auto await_suspend(std::coroutine_handle<promise> h) noexcept{
-            return h.promise().pre_handle;
+            if(h.promise().pre_handle)
+            {
+                return h.promise().pre_handle;
+            }
+            return std::coroutine_handle<>::from_address(std::noop_coroutine().address());
         }
         void await_resume() noexcept{}
     };
