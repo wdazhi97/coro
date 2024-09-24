@@ -9,7 +9,7 @@
 #include "macro.h"
 __CPP_CORO_NS_BEGIN
 template<class T>
-class Task;
+class task;
 
 
 class promise_base{
@@ -48,7 +48,7 @@ public:
         value =  in_value;
     }
 
-    Task<T> get_return_object();
+    task<T> get_return_object();
 
     void unhandled_exception() {
         exception = std::current_exception();
@@ -77,7 +77,7 @@ private:
 template<>
 class Promise_type<void> final : public promise_base{
 public:
-    Task<void> get_return_object();
+    task<void> get_return_object();
 
     void return_value() noexcept {}
 
@@ -93,24 +93,24 @@ private:
 };
 
 template<class T>
-class Task{
+class task{
 public:
     using promise_type = Promise_type<T>;
     using handle_type= std::coroutine_handle<promise_type>;
-    Task(handle_type h):m_handle(h) {
+    task(handle_type h):m_handle(h) {
 
     }
 
-    Task(const Task & ) = delete;
+    task(const task & ) = delete;
 
-    Task& operator=(const Task &) = delete;
+    task& operator=(const task &) = delete;
 
-    Task(Task && other) {
+    task(task && other) {
         m_handle = other.m_handle;
         other.m_handle = nullptr;
     }
 
-    Task& operator=(const Task && other){
+    task& operator=(const task && other){
         m_handle = other.m_handle;
         other.m_handle = nullptr;
         return *this;
@@ -152,12 +152,12 @@ private:
 };
 
 template<class T>
-Task<T> Promise_type<T>::get_return_object()
+task<T> Promise_type<T>::get_return_object()
 {
     return std::coroutine_handle<Promise_type<T>>::from_promise(*this);
 }
 
-Task<void> Promise_type<void>::get_return_object() {
+task<void> Promise_type<void>::get_return_object() {
     return std::coroutine_handle<Promise_type<void>>::from_promise(*this);
 }
 __CPP_CORO_NS_END

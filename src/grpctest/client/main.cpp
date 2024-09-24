@@ -120,7 +120,7 @@ public:
     grpc::CompletionQueue cq_;
 };
 
-cppcoro::Task<int> GetAddress(AddressClient & Client)
+cppcoro::task<int> GetAddress(AddressClient & Client)
 {
     std::string user = "John";
     auto * call = Client.GetAddress(user);
@@ -140,7 +140,7 @@ cppcoro::sync_task<int> GetAddressStart(AddressClient & Client)
 
 cppcoro::sync_task<int> GetAllTest(AddressClient & Client)
 {
-    std::vector<cppcoro::Task<int>> tasks;
+    std::vector<cppcoro::task<int>> tasks;
     for(int i = 0; i < 10000; ++i)
     {
         tasks.emplace_back(GetAddress(Client));
