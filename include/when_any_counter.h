@@ -21,12 +21,12 @@ public:
     bool try_await(std::coroutine_handle<> awaitCoroutine)
     {
         await_coroutine_ = awaitCoroutine;
-        return count_.fetch_sub(1, std::memory_order_acq_rel) > 1;
+        return count_-- > 1;
     }
 
-    void on_sub_awaitble_completed(int index) noexcept
+    void on_sub_awaitble_completed(size_t index) noexcept
     {
-        if(count_.fetch_sub(1, std::memory_order_acq_rel) == 1)
+        if(count_-- == 1)
         {
             await_coroutine_.resume();
         }
@@ -39,17 +39,17 @@ public:
 
     cancel_request* get_cancel_request() { return cancel_request_; }
 
-    int get_result_index() const {return result_index;}
+    size_t get_result_index() const { return result_index; }
 
-    int get_cur_index() {return cur_index++;}
+    size_t get_cur_index() { return cur_index++; }
 
 protected:
-    std::atomic<int> count_;     
+    size_t count_;
     std::coroutine_handle<> await_coroutine_;
     cancel_request* cancel_request_;
-    int result_index;
+    size_t result_index;
 
-    int cur_index = 0;
+    size_t cur_index = 0;
 };
 
 __CPP_CORO_NS_END

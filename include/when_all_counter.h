@@ -20,18 +20,18 @@ public:
     bool try_await(std::coroutine_handle<> awaitCoroutine)
     {
         await_coroutine_ = awaitCoroutine;
-        return count_.fetch_sub(1, std::memory_order_acq_rel) > 1;
+        return count_-- > 1;
     }
 
     void on_sub_awaitble_completed() noexcept
     {
-        if(count_.fetch_sub(1, std::memory_order_acq_rel) == 1)
+        if(count_-- == 1)
         {
             await_coroutine_.resume();
         }
     }
 protected:
-    std::atomic<int> count_;     
+    size_t count_;
     std::coroutine_handle<> await_coroutine_;
 };
 
