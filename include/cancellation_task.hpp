@@ -265,6 +265,8 @@ public:
                 return m_handle.promise().result();
             };
 
+            void await_cancellable() { }
+
             cancellation_task * task_;
             handle_type m_handle;
         };

@@ -2,14 +2,14 @@
 
 #include "when_any_task.h"
 #include "unwrap_reference.h"
-#include "is_awaitable.h"
+#include "is_awaitable_cancelable.h"
 #include "when_any_ready_awaitable.hpp"
 #include "awaitable_traits.h"
 
 __CPP_CORO_NS_BEGIN
 
 template<typename ...Awaitables, std::enable_if_t<
-   std::conjunction_v<is_awaitable<unwrap_reference_t<std::remove_reference_t<Awaitables>>> ...>,int> = 0>
+   std::conjunction_v<is_awaitable_cancelable<unwrap_reference_t<std::remove_reference_t<Awaitables>>> ...>,int> = 0>
     inline auto when_any_ready(cancel_request* cancel_request, Awaitables ...awaitables)
 {
     return when_any_ready_awaitble<std ::tuple<when_any_task<

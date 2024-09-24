@@ -19,6 +19,8 @@ endif()
 #find_package(Threads)
 
 add_executable(Coroutine main.cpp
-        share_task.hpp)
+        share_task.hpp
+        include/is_awaitable_cancelable.h
+)
 
 target_link_libraries(Coroutine pthread)
