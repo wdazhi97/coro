@@ -93,7 +93,7 @@ private:
 };
 
 template<class T>
-class task{
+[[nodiscard]] class task{
 public:
     using promise_type = task_promise_type<T>;
     using handle_type= std::coroutine_handle<promise_type>;

@@ -12,13 +12,25 @@ template<class T> class sync_task;
 
 template<class T>
 class sync_promise{
+    class final_awaiter{
+    public:
+        bool await_ready() noexcept {return false;}
+
+        template<class promise>
+        auto await_suspend(std::coroutine_handle<promise> h) noexcept{
+            return h.promise().pre_handle;
+        }
+        void await_resume() noexcept{}
+    };
 public:
     std::suspend_never initial_suspend() noexcept{return{};}
-    std::suspend_always final_suspend() noexcept {return{};}
+    final_awaiter final_suspend() noexcept {return{};}
 
     sync_task<T> get_return_object();
 
-    void unhandled_exception(){}
+    void unhandled_exception(){
+        std::terminate();
+    }
 
     void return_value(T && value)
     {
@@ -35,11 +47,59 @@ public:
         //std::cout << "destructure" << std::endl;
     }
 
+    void set_pre_handle(std::coroutine_handle<> h){
+        pre_handle = h;
+    }
+
 private:
 
-
+    std::coroutine_handle<> pre_handle;
 
     T value_;
+};
+
+template<>
+class sync_promise<void>{
+    class final_awaiter{
+    public:
+        bool await_ready() noexcept {return false;}
+
+        template<class promise>
+        auto await_suspend(std::coroutine_handle<promise> h) noexcept{
+            return h.promise().pre_handle;
+        }
+        void await_resume() noexcept{}
+    };
+public:
+    std::suspend_never initial_suspend() noexcept{return{};}
+    final_awaiter final_suspend() noexcept {return{};}
+
+    sync_task<void> get_return_object();
+
+    void unhandled_exception(){
+        std::terminate();
+    }
+
+    void return_void()
+    {
+        
+    }
+
+    void result(){
+    
+    }
+    ~sync_promise(){
+        //std::cout << "destructure" << std::endl;
+    }
+
+    void set_pre_handle(std::coroutine_handle<> h){
+        pre_handle = h;
+    }
+
+private:
+
+    std::coroutine_handle<> pre_handle;
+
 };
 
 template<class T>
@@ -72,7 +132,10 @@ public:
                 return m_handle && m_handle.done();
             }
             T await_resume() {return m_handle.promise().result();}
-            auto await_suspend(std::coroutine_handle<> h) {return m_handle;}
+            auto await_suspend(std::coroutine_handle<> h) {
+                m_handle.promise().set_pre_handle(h);
+                return m_handle;
+            }
             std::coroutine_handle<promise_type> m_handle;
         };
         return awaiter(m_handle);
@@ -85,6 +148,10 @@ private:
 template<class T>
 sync_task<T> sync_promise<T>::get_return_object() {
     return std::coroutine_handle<sync_promise<T>>::from_promise(*this);
+}
+
+sync_task<void> sync_promise<void>::get_return_object() {
+    return std::coroutine_handle<sync_promise<void>>::from_promise(*this);
 }
 __CPP_CORO_NS_END
 #endif //COROUTINE_SYNC_TASK_HPP
