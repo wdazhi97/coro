@@ -87,7 +87,7 @@ private:
     }
 private:
     when_any_counter *counter_;
-    int index_;
+    size_t index_;
     std::exception_ptr exception_;
     std::add_pointer_t<Result> result_;
 };
@@ -148,7 +148,7 @@ public:
 
 private:
     when_any_counter *counter_;
-    int index_;
+    size_t index_;
     std::exception_ptr exception_;
 };
 
