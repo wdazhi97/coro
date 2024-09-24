@@ -138,7 +138,7 @@ cppcoro::sync_task<int> GetAddressStart(AddressClient & Client)
     co_return co_await GetAddress(Client);
 }
 
-cppcoro::sync_task<int> GetAllTest(AddressClient & Client)
+cppcoro::sync_task<void> GetAllTest(AddressClient & Client)
 {
     std::vector<cppcoro::task<int>> tasks;
     for(int i = 0; i < 10000; ++i)
@@ -146,7 +146,7 @@ cppcoro::sync_task<int> GetAllTest(AddressClient & Client)
         tasks.emplace_back(GetAddress(Client));
     }
     co_await cppcoro::when_all_ready(std::move(tasks));
-    co_return 0;
+    co_return;
 }
 
 int main(int argc, char* argv[])
