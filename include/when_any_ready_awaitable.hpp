@@ -65,7 +65,8 @@ public:
 
             return_type await_resume() noexcept
             {
-                return std::make_tuple(awaitable_.counter_.get_result_index(), awaitable_.get_result(std::make_integer_sequence<std::size_t, sizeof...(Tasks)>{}));
+                return std::make_tuple(awaitable_.counter_.get_result_index(),
+                    awaitable_.get_result(std::make_integer_sequence<std::size_t, sizeof...(Tasks)>{}));
             }
         private:
             when_any_ready_awaitable &awaitable_;

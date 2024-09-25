@@ -15,7 +15,8 @@
 #include "sync_task.hpp"
 
 
-static int tmp_time = 0;
+static int task_index = 0;
+static std::vector<int> time_vector { 4, 2, 3};
 
 class wait_time_task
 {
@@ -26,32 +27,36 @@ public:
     {
         struct awaiter {
             int sleepTime = 0;
+            int cur_task_index = 0;
 
             bool await_ready() {
                 return false;
             }
             void await_suspend(std::coroutine_handle<> coroutine_handle) {
-                sleepTime = 6 + tmp_time;
-                tmp_time += 1;
+                sleepTime = time_vector[task_index];
+                cur_task_index = task_index;
+                task_index++;
 
-                if (sleepTime == 7) {
-                    coroutine_handle.resume();
-                    return;
-                }
+                std::cout << "task " << cur_task_index << " start, will resume after " << sleepTime << " second "<< std::endl;
+                // if (sleepTime == 7) {
+                //     coroutine_handle.resume();
+                //     return;
+                // }
 
                 std::thread([this, coroutine_handle]() {
                     std::this_thread::sleep_for(std::chrono::seconds(this->sleepTime));
                     if(!coroutine_handle.done()) {
-                        std::cout << "reach the time, resume success " << std::endl;
+                        std::cout << std::endl;
+                        std::cout << "task " << cur_task_index << " reach the time" << std::endl;
                         coroutine_handle.resume();
                     }
                     else {
-                        std::cout << "reach the time, do nothing" << std::endl;
+                        // std::cout << "task " << cur_task_index << " reach the time, do nothing" << std::endl;
                     }
                 }).detach();
             }
             int await_resume() {
-                //std::cout << "task resume after " << sleepTime  << "s " << std::chrono::system_clock::now() << std::endl;
+                std::cout << "task " << cur_task_index << " resume " << std::endl;
                 return sleepTime;
             }
 
@@ -69,7 +74,6 @@ public:
 
 
 cppcoro::cancellation_task<int> cancel(cancel_token token) {
-    std::cout << "start custom function " << std::endl;
     auto x = co_await wait_time_task();
     //std::cout << "end coroutine " << std::chrono::system_clock::now() << std::endl;
     co_return x;
@@ -92,8 +96,8 @@ cppcoro::sync_task<int> test() {
     //     //std::cout << "request finished" << std::endl;
     // }).detach();
     auto [index, tasks] = co_await cppcoro::when_any_ready(&req, cancel(token), cancel(token), cancel(token));
-    std::cout << "Task0:" << std::get<0>(tasks) << " Task1:"  << std::get<1>(tasks)  << " Task2:" << std::get<2>(tasks) << " " <<std::endl;
-    std::cout << "task finished result: " << index << std::endl;
+    // std::cout << "Task0:" << std::get<0>(tasks) << " Task1:"  << std::get<1>(tasks)  << " Task2:" << std::get<2>(tasks) << " " <<std::endl;
+    std::cout << std::endl << "when_any finished, success index: " << index << std::endl;
     co_return 1;
 }
 

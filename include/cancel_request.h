@@ -28,7 +28,7 @@ public:
 
     void cancel(){
         m_state = static_cast<std::uint32_t> (cancel_state_type::CANCELED);
-        std::cout << "cancel_state" << std::endl;
+        std::cout << "cancel coroutines" << std::endl;
         for(auto call : std::views::reverse(call_backs)) {
             if(call.is_valid)
             {

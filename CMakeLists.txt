@@ -21,6 +21,7 @@ endif()
 add_executable(Coroutine main.cpp
         share_task.hpp
         include/is_awaitable_cancelable.h
+        include/when_any_ready_awaitable.hpp
 )
 
 target_link_libraries(Coroutine pthread)
