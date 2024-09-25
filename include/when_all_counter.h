@@ -23,7 +23,7 @@ public:
         return count_-- > 1;
     }
 
-    void on_sub_awaitble_completed() noexcept
+    void on_sub_awaitable_completed() noexcept
     {
         if(count_-- == 1)
         {

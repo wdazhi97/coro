@@ -8,14 +8,14 @@ __CPP_CORO_NS_BEGIN
 
 // 类模板定义
 template<typename TaskContainer>
-class when_all_ready_awaitble;
+class when_all_ready_awaitable;
 
 // void类型特化 递归基
 template<>
-class when_all_ready_awaitble<std::tuple<>>
+class when_all_ready_awaitable<std::tuple<>>
 {
-    constexpr when_all_ready_awaitble() noexcept {};
-    explicit constexpr when_all_ready_awaitble(std::tuple<>) noexcept {}
+    constexpr when_all_ready_awaitable() noexcept {};
+    explicit constexpr when_all_ready_awaitable(std::tuple<>) noexcept {}
     constexpr bool await_ready() { return true; }
     void await_suspend(std::coroutine_handle<>) noexcept {};
     std::tuple<> await_resume() const noexcept { return {}; }
@@ -23,23 +23,23 @@ class when_all_ready_awaitble<std::tuple<>>
 
 // 可变参数模板特化
 template<typename ... Tasks>
-class when_all_ready_awaitble<std::tuple<Tasks ...>>
+class when_all_ready_awaitable<std::tuple<Tasks ...>>
 {
 public:
 
     using return_type = std::tuple<typename std::conditional<std::is_void<typename Tasks::return_type>::value,void_value, typename Tasks::return_type>::type ...>;
-    explicit when_all_ready_awaitble(Tasks&& ...tasks)
+    explicit when_all_ready_awaitable(Tasks&& ...tasks)
         noexcept(std::conjunction_v<std::is_nothrow_move_constructible<Tasks>...>)
         :counter_(sizeof...(Tasks))
         ,tasks_(std::move(tasks)...)
     {}
 
-    explicit when_all_ready_awaitble(std::tuple<Tasks ...> &&tasks)
+    explicit when_all_ready_awaitable(std::tuple<Tasks ...> &&tasks)
         :counter_(sizeof...(Tasks))
         ,tasks_(std::move(tasks))
     {}
 
-    when_all_ready_awaitble(when_all_ready_awaitble &&other)
+    when_all_ready_awaitable(when_all_ready_awaitable &&other)
         :counter_(sizeof...(Tasks))
         , tasks_(std::move(other.tasks_))
     {}
@@ -48,7 +48,7 @@ public:
     {
         struct awaiter
         {
-            awaiter(when_all_ready_awaitble &awaitable) noexcept
+            awaiter(when_all_ready_awaitable &awaitable) noexcept
                 :awaitable_(awaitable) {}
 
             bool await_ready() const noexcept
@@ -66,7 +66,7 @@ public:
                 return awaitable_.get_result(std::make_integer_sequence<std::size_t, sizeof...(Tasks)>{});
             }
         private:
-            when_all_ready_awaitble &awaitable_;
+            when_all_ready_awaitable &awaitable_;
         };
 
         return awaiter{ *this };
@@ -76,7 +76,7 @@ public:
     {
         struct awaiter
         {
-            awaiter(when_all_ready_awaitble &awaitable) noexcept
+            awaiter(when_all_ready_awaitable &awaitable) noexcept
                 :awaitable_(awaitable) {}
 
             bool await_ready() const noexcept
@@ -95,7 +95,7 @@ public:
                 return std::move(awaitable_.get_result(std::make_integer_sequence<std::size_t, sizeof...(Tasks)>{}));
             }
         private:
-            when_all_ready_awaitble &awaitable_;
+            when_all_ready_awaitable &awaitable_;
         };
 
         return awaiter{ *this };
@@ -133,28 +133,28 @@ public:
 
 // 容器类型特化
 template<typename TaskContainer>
-class when_all_ready_awaitble
+class when_all_ready_awaitable
 {
 public:
-    explicit when_all_ready_awaitble(TaskContainer&& tasks)
+    explicit when_all_ready_awaitable(TaskContainer&& tasks)
         : counter_(tasks.size())
         , tasks_(std::forward<TaskContainer>(tasks))
     {}
 
-    when_all_ready_awaitble(when_all_ready_awaitble &&other)
+    when_all_ready_awaitable(when_all_ready_awaitable &&other)
         noexcept(std::is_nothrow_move_constructible_v<TaskContainer>)
         :counter_(other.tasks_.size())
         , tasks_(std::move(other.tasks_))
     {}
 
-    when_all_ready_awaitble(const when_all_ready_awaitble &) = delete;
-    when_all_ready_awaitble &operator = (const when_all_ready_awaitble &) = delete;
+    when_all_ready_awaitable(const when_all_ready_awaitable &) = delete;
+    when_all_ready_awaitable &operator = (const when_all_ready_awaitable &) = delete;
 
     auto operator co_await() & noexcept
     {
         struct awaiter
         {
-            awaiter(when_all_ready_awaitble &awaitable) noexcept
+            awaiter(when_all_ready_awaitable &awaitable) noexcept
                 :awaitable_(awaitable) {}
 
             bool await_ready() const noexcept
@@ -172,7 +172,7 @@ public:
                 return awaitable_.tasks_;
             }
         private:
-            when_all_ready_awaitble &awaitable_;
+            when_all_ready_awaitable &awaitable_;
         };
 
         return awaiter{ *this };
@@ -182,7 +182,7 @@ public:
     {
         struct awaiter
         {
-            awaiter(when_all_ready_awaitble &awaitable) noexcept
+            awaiter(when_all_ready_awaitable &awaitable) noexcept
                 :awaitable_(awaitable) {}
 
             bool await_ready() const noexcept
@@ -200,7 +200,7 @@ public:
                 return std::move(awaitable_.tasks_);
             }
         private:
-            when_all_ready_awaitble &awaitable_;
+            when_all_ready_awaitable &awaitable_;
         };
 
         return awaiter{ *this };

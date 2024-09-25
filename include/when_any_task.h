@@ -13,7 +13,7 @@
 __CPP_CORO_NS_BEGIN
 
 template<typename TaskContainer>
-class when_any_ready_awaitble;
+class when_any_ready_awaitable;
 
 template<typename Result>
 class when_any_task_promise final
@@ -35,7 +35,7 @@ public:
             bool await_ready() const noexcept { return false; }
             void await_suspend(corotinue_handle_t coro) const noexcept
             {
-                return coro.promise().counter_->on_sub_awaitble_completed(coro.promise().index_);
+                return coro.promise().counter_->on_sub_awaitable_completed(coro.promise().index_);
             }
             void await_resume() const noexcept {}
         };
@@ -62,7 +62,7 @@ public:
     void start(when_any_counter &counter) noexcept
     {
         counter_ = &counter;
-        index_ = counter.get_coro_index();
+        index_ = counter.get_coroutine_index();
         corotinue_handle_t::from_promise(*this).resume();
     }
 
@@ -114,7 +114,7 @@ public:
             bool await_ready() const noexcept { return false; }
             void await_suspend(corotinue_handle_t coro) const noexcept
             {
-                return coro.promise().counter_->on_sub_awaitble_completed(coro.promise().index_);
+                return coro.promise().counter_->on_sub_awaitable_completed(coro.promise().index_);
             }
             void await_resume() const noexcept {}
         };
@@ -134,7 +134,7 @@ public:
     void start(when_any_counter &counter) noexcept
     {
         counter_ = &counter;
-        index_ = counter.get_coro_index();
+        index_ = counter.get_coroutine_index();
         corotinue_handle_t::from_promise(*this).resume();
     }
 
@@ -215,7 +215,7 @@ public:
     }
 private:
     template<typename TaskContainer>
-    friend class when_any_ready_awaitble;
+    friend class when_any_ready_awaitable;
     void start(when_any_counter &counter) noexcept
     {
         coroutine_.promise().start(counter);

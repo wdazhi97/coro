@@ -13,7 +13,7 @@
 __CPP_CORO_NS_BEGIN
 
 template<typename TaskContainer>
-class when_all_ready_awaitble;
+class when_all_ready_awaitable;
 
 template<typename Result>
 class when_all_task_promise final
@@ -35,7 +35,7 @@ public:
             bool await_ready() const noexcept { return false; }
             void await_suspend(corotinue_handle_t coro) const noexcept
             {
-                return coro.promise().counter_->on_sub_awaitble_completed();
+                return coro.promise().counter_->on_sub_awaitable_completed();
             }
             void await_resume() const noexcept {}
         };
@@ -112,7 +112,7 @@ public:
             bool await_ready() const noexcept { return false; }
             void await_suspend(corotinue_handle_t coro) const noexcept
             {
-                return coro.promise().counter_->on_sub_awaitble_completed();
+                return coro.promise().counter_->on_sub_awaitable_completed();
             }
             void await_resume() const noexcept {}
         };
@@ -211,7 +211,7 @@ public:
     }
 private:
     template<typename TaskContainer>
-    friend class when_all_ready_awaitble;
+    friend class when_all_ready_awaitable;
     void start(when_all_counter &counter) noexcept
     {
         coroutine_.promise().start(counter);

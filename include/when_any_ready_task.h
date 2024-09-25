@@ -12,7 +12,7 @@ template<typename ...Awaitables, std::enable_if_t<
    std::conjunction_v<is_awaitable_cancelable<unwrap_reference_t<std::remove_reference_t<Awaitables>>> ...>,int> = 0>
     inline auto when_any_ready(cancel_request* cancel_request, Awaitables ...awaitables)
 {
-    return when_any_ready_awaitble<std ::tuple<when_any_task<
+    return when_any_ready_awaitable<std ::tuple<when_any_task<
         typename awaitable_traits<unwrap_reference_t<std::remove_reference_t<Awaitables>>>::await_result_t>...>>
         (cancel_request, std::make_tuple(make_when_any_task(std::forward<Awaitables>(awaitables))...));
 }
@@ -29,7 +29,7 @@ typename Result = typename awaitable_traits<unwrap_reference_t<Awaitable>>::awai
         tasks.emplace_back(make_when_any_task(std::move(awaitable)));
     }
 
-    return when_any_ready_awaitble<std::vector<when_any_task<Result>>>(cancel_request, std::move(tasks));
+    return when_any_ready_awaitable<std::vector<when_any_task<Result>>>(cancel_request, std::move(tasks));
 }
 
 __CPP_CORO_NS_END

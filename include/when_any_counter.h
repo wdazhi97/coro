@@ -24,7 +24,7 @@ public:
         return count_-- > 1;
     }
 
-    void on_sub_awaitble_completed(size_t index) noexcept
+    void on_sub_awaitable_completed(size_t index) noexcept
     {
         if (cancel_request_ && !cancel_request_->is_cancelled())
         {
@@ -42,7 +42,7 @@ public:
 
     size_t get_result_index() const { return result_index; }
 
-    size_t get_coro_index() { return coro_index++; }
+    size_t get_coroutine_index() { return coroutine_index++; }
 
 protected:
     size_t count_;
@@ -50,7 +50,7 @@ protected:
     cancel_request* cancel_request_;
     size_t result_index;
 
-    size_t coro_index = 0;
+    size_t coroutine_index = 0;
 };
 
 __CPP_CORO_NS_END
