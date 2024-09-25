@@ -76,9 +76,27 @@ cppcoro::sync_task<int> test() {
     co_return 1;
 }
 
+cppcoro::task<int> foobar()
+{
+    co_return 1;
+}
 
+cppcoro::task<int> bar()
+{
+    co_await foobar();
+}
+
+cppcoro::sync_task<int> foo()
+{
+    co_await bar();
+}
 
 int main() {
-    auto result = test();
-    while(1){};
+    auto result = foo();
 }
+
+
+
+
+
+
