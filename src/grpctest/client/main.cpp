@@ -16,6 +16,13 @@
 auto start = std::chrono::high_resolution_clock::now();
 auto end = std::chrono::high_resolution_clock::now();
 
+auto re_start = std::chrono::high_resolution_clock::now();
+auto re_end = std::chrono::high_resolution_clock::now();
+auto re_total = std::chrono::duration<double>();
+
+auto re_resume = std::chrono::high_resolution_clock::now();
+auto re_poccess = std::chrono::high_resolution_clock::now();
+
 struct AsyncClientCall {
 
     struct awaiter{
@@ -90,21 +97,14 @@ public:
 
         // Block until the next result is available in the completion queue "cq".
         while (seq < total && cq_.Next(&got_tag, &ok)) {
+            re_start = std::chrono::high_resolution_clock::now();
         // The tag in this example is the memory location of the call object
             AsyncClientCall* call = static_cast<AsyncClientCall*>(got_tag);
-
-            // Verify that the request was completed successfully. Note that "ok"
-            // corresponds solely to the request for updates introduced by Finish().
-
-            /*if (call->status.ok())
-                std::cout << "Greeter received: " << call->reply.name() << std::endl;
-            else
-                std::cout << "RPC failed" << std::endl;*/
-            call->resume();
             seq++;
-
-            // Once we're complete, deallocate the call object.
-            //delete call;
+            call->resume();
+            re_end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> duration = re_end - re_start;
+            re_total = re_total + duration;
         }
   }
 
@@ -161,12 +161,12 @@ int main(int argc, char* argv[])
     AddressClient greeter(channel);
 
     start = std::chrono::high_resolution_clock::now();
-    /*for(int i = 0 ; i < 10000; i++)
+    for(int i = 0 ; i < 10000; i++)
     {
     //GetAddressStart(greeter);
         GetAddressStart(greeter);
-    }*/
-    GetAllTest(greeter);
+    }
+    //GetAllTest(greeter);
     end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> duration = end - start;
     std::cout << "执行时间: " << duration.count() << " 秒" << std::endl;
@@ -187,6 +187,7 @@ int main(int argc, char* argv[])
     std::cout << "Country: " << result.country() << std::endl;*/
     greeter.AsyncCompleteRpc(10000);
     std::cout << "Press control-c to quit" << std::endl << std::endl;
+    std::cout << "收包时间：" << re_total.count() << " 秒" << std::endl;
     //thread_.join(); 
 
     return 0;
