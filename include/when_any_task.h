@@ -62,7 +62,7 @@ public:
     void start(when_any_counter &counter) noexcept
     {
         counter_ = &counter;
-        index_ = counter.get_cur_index();
+        index_ = counter.get_coro_index();
         corotinue_handle_t::from_promise(*this).resume();
     }
 
@@ -134,7 +134,7 @@ public:
     void start(when_any_counter &counter) noexcept
     {
         counter_ = &counter;
-        index_ = counter.get_cur_index();
+        index_ = counter.get_coro_index();
         corotinue_handle_t::from_promise(*this).resume();
     }
 

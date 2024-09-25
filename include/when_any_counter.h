@@ -26,22 +26,23 @@ public:
 
     void on_sub_awaitble_completed(size_t index) noexcept
     {
-        if(count_-- == 1)
+        if (cancel_request_ && !cancel_request_->is_cancelled())
         {
-            await_coroutine_.resume();
-        }
-        if (!cancel_request_->is_cancelled()) {
             result_index = index;
             cancel_request_->request_cancel();
         }
 
+        if(count_-- == 1)
+        {
+            await_coroutine_.resume();
+        }
     }
 
     cancel_request* get_cancel_request() { return cancel_request_; }
 
     size_t get_result_index() const { return result_index; }
 
-    size_t get_cur_index() { return cur_index++; }
+    size_t get_coro_index() { return coro_index++; }
 
 protected:
     size_t count_;
@@ -49,7 +50,7 @@ protected:
     cancel_request* cancel_request_;
     size_t result_index;
 
-    size_t cur_index = 0;
+    size_t coro_index = 0;
 };
 
 __CPP_CORO_NS_END
