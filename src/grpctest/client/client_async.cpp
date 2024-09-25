@@ -12,6 +12,10 @@
 auto start = std::chrono::high_resolution_clock::now();
 auto end = std::chrono::high_resolution_clock::now();
 
+auto re_start = std::chrono::high_resolution_clock::now();
+auto re_end = std::chrono::high_resolution_clock::now();
+auto re_total = std::chrono::duration<double>();
+
 class AddressClient {
 public:
     explicit AddressClient(std::shared_ptr<grpc::Channel> channel):stub_(expcmake::AddressBook::NewStub(channel)){};
@@ -40,6 +44,7 @@ public:
 
         // Block until the next result is available in the completion queue "cq".
         while (seq < total && cq_.Next(&got_tag, &ok)) {
+            re_start = std::chrono::high_resolution_clock::now();
         // The tag in this example is the memory location of the call object
             AsyncClientCall* call = static_cast<AsyncClientCall*>(got_tag);
 
@@ -53,9 +58,11 @@ public:
                 // std::cout << "Greeter received: " << call->reply.name() << " " << seq++ << std::endl;
             else
                 std::cout << "RPC failed" << std::endl;
-
             // Once we're complete, deallocate the call object.
             delete call;
+            re_end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double> duration = re_end - re_start;
+            re_total = re_total + duration;
         }
   }
 
@@ -121,6 +128,7 @@ int main(int argc, char* argv[])
     std::cout << "Country: " << result.country() << std::endl;*/
     greeter.AsyncCompleteRpc(10000);
     std::cout << "Press control-c to quit" << std::endl << std::endl;
+    std::cout << "收包时间：" << re_total.count() << " 秒" << std::endl;
     //thread_.join(); 
 
     return 0;
