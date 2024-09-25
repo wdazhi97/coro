@@ -11,6 +11,9 @@ add_executable(cancel cancel.cpp)
 add_executable(when_any_test
         when_any_test.cpp
 )
+add_executable(when_all_any_test
+        when_any_all_test.cpp
+)
 
 target_link_libraries(awaiter pthread)
 target_link_libraries(when_all_multi_level pthread)
